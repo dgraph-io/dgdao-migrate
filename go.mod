@@ -1,6 +1,6 @@
 module github.com/mlwelles/modusgraph-migrate
 
-go 1.25.6
+go 1.25.7
 
 require (
 	github.com/dgraph-io/dgo/v250 v250.0.0
@@ -153,4 +153,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/matthewmcneely/modusgraph => github.com/mlwelles/modusGraph v0.5.0-dev-mlwelles-20260604b
+replace github.com/matthewmcneely/modusgraph => github.com/mlwelles/modusGraph v0.5.0-dev-mlwelles-20260604f

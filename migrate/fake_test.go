@@ -9,7 +9,6 @@ import (
 	dg "github.com/dolan-in/dgman/v2"
 	"github.com/dgraph-io/dgo/v250"
 	mg "github.com/matthewmcneely/modusgraph"
-	"github.com/matthewmcneely/modusgraph/load"
 )
 
 // mustMarshalSchema renders the models' schema, failing the test on a conflict.
@@ -143,4 +142,3 @@ func (c *stubClient) DgraphClient() (*dgo.Dgraph, func(), error) { return nil, f
 func (c *stubClient) WithRetry(_ context.Context, _ mg.RetryPolicy, fn func() error) error {
 	return fn()
 }
-func (c *stubClient) LoadData(context.Context, string, ...load.Option) error { return nil }
