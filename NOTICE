@@ -1,0 +1,10 @@
+modusgraph-migrate
+Copyright 2017-2026 Istari Digital, Inc.
+
+This product includes software developed as part of modusGraph
+(https://github.com/matthewmcneely/modusgraph), licensed under the Apache
+License, Version 2.0.
+
+The schema versioning and migration engine in this repository was extracted from
+a fork of modusGraph (https://github.com/mlwelles/modusGraph) and retains its
+original copyright and license.

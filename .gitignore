@@ -1,0 +1,6 @@
+/bin/
+.worktrees/
+*.test
+*.out
+coverage.*
+.DS_Store
