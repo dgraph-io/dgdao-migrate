@@ -1,4 +1,4 @@
-module github.com/mlwelles/modusgraph-migrate
+module github.com/mlwelles/modusGraph-migrate
 
 go 1.25.7
 

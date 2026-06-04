@@ -32,7 +32,7 @@ func renderMigrationFile(pkg, name string, id, after int64, delta Delta) (goSrc,
 	if additive {
 		b.WriteString("\t_ \"embed\"\n\n")
 	}
-	b.WriteString("\t\"github.com/mlwelles/modusgraph-migrate/migrate\"\n)\n\n")
+	b.WriteString("\t\"github.com/mlwelles/modusGraph-migrate/migrate\"\n)\n\n")
 
 	if additive {
 		fmt.Fprintf(&b, "//go:embed %d_%s.schema\n", id, name)

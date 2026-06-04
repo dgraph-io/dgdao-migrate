@@ -13,7 +13,7 @@ import (
 	"fmt"
 
 	mg "github.com/matthewmcneely/modusgraph"
-	"github.com/mlwelles/modusgraph-migrate/migrate"
+	"github.com/mlwelles/modusGraph-migrate/migrate"
 )
 
 // Provider supplies a Client, the registered migration list, and the current

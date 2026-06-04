@@ -11,7 +11,7 @@ import (
 	"time"
 
 	mg "github.com/matthewmcneely/modusgraph"
-	"github.com/mlwelles/modusgraph-migrate/migrate"
+	"github.com/mlwelles/modusGraph-migrate/migrate"
 )
 
 type Tree struct {

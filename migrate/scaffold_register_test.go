@@ -12,7 +12,7 @@ func TestAppendToAll_AppendsIdentifier(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "migrations.go")
 	mustWrite(t, path,
-		"package migrations\n\nimport \"github.com/mlwelles/modusgraph-migrate/migrate\"\n\nvar All = []migrate.Migration{\n\tbaseline20260528000001,\n}\n")
+		"package migrations\n\nimport \"github.com/mlwelles/modusGraph-migrate/migrate\"\n\nvar All = []migrate.Migration{\n\tbaseline20260528000001,\n}\n")
 
 	if err := appendToAll(path, "addMime20260601090000"); err != nil {
 		t.Fatalf("appendToAll: %v", err)

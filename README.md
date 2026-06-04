@@ -1,4 +1,4 @@
-# modusgraph-migrate
+# modusGraph-migrate
 
 The `migrate` package applies ordered, run-once schema and data changes to a
 modusGraph database. It gives you an explicit revision chain, resumable phased
@@ -17,7 +17,7 @@ declare the same one:
 ```go
 // go.mod
 require (
-    github.com/mlwelles/modusgraph-migrate v0.1.0
+    github.com/mlwelles/modusGraph-migrate v0.1.0
     github.com/matthewmcneely/modusgraph v0.0.0-00010101000000-000000000000
 )
 
