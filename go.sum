@@ -414,8 +414,8 @@ github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrk
 github.com/mitchellh/mapstructure v0.0.0-20180203102830-a4e142e9c047/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/mitchellh/mapstructure v1.5.1-0.20231216201459-8508981c8b6c h1:cqn374mizHuIWj+OSJCajGr/phAmuMug9qIX3l9CflE=
 github.com/mitchellh/mapstructure v1.5.1-0.20231216201459-8508981c8b6c/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
-github.com/mlwelles/modusGraph v0.5.0-dev-mlwelles-20260604f h1:IA2TYWWgqOhQw7kOsE4tuObS1ZRW2h54nZ34iULmco8=
-github.com/mlwelles/modusGraph v0.5.0-dev-mlwelles-20260604f/go.mod h1:T/hAgJ4qpushw0bfjeB+fMOrVWSYmshQfs6qFjjjO1E=
+github.com/mlwelles/modusGraph v0.5.0-dev-mlwelles-20260625a h1:dWNUNQoHGWwM4xJBMNjNizm/xEK1b0P83rTxp+iz3tc=
+github.com/mlwelles/modusGraph v0.5.0-dev-mlwelles-20260625a/go.mod h1:T/hAgJ4qpushw0bfjeB+fMOrVWSYmshQfs6qFjjjO1E=
 github.com/moby/docker-image-spec v1.3.1 h1:jMKff3w6PgbfSa69GfNg+zN/XLhfXJGnEx3Nl2EsFP0=
 github.com/moby/docker-image-spec v1.3.1/go.mod h1:eKmb5VW8vQEh/BAr2yvVNvuiJuY6UIocYsFu/DxxRpo=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=

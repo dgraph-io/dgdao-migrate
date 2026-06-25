@@ -6,8 +6,8 @@ import (
 	"sync"
 	"testing"
 
-	dg "github.com/dolan-in/dgman/v2"
 	"github.com/dgraph-io/dgo/v250"
+	dg "github.com/dolan-in/dgman/v2"
 	mg "github.com/matthewmcneely/modusgraph"
 )
 
@@ -23,13 +23,13 @@ func mustMarshalSchema(t *testing.T, models ...any) string {
 
 // fakeStore is an in-memory store for unit-testing the Runner.
 type fakeStore struct {
-	mu        sync.Mutex
-	migs      []migrationRec
-	steps     []stepRec
-	locked    bool
-	bootErr   error
-	lockErr   error
-	saveErr   error // injected error for saveStep
+	mu      sync.Mutex
+	migs    []migrationRec
+	steps   []stepRec
+	locked  bool
+	bootErr error
+	lockErr error
+	saveErr error // injected error for saveStep
 }
 
 func newFakeStore() *fakeStore { return &fakeStore{} }
@@ -122,19 +122,23 @@ type stubClient struct {
 	alterSchemaErr error
 }
 
-func (c *stubClient) Insert(context.Context, any) error                  { return nil }
-func (c *stubClient) InsertRaw(context.Context, any) error               { return nil }
-func (c *stubClient) Upsert(context.Context, any, ...string) error       { return nil }
-func (c *stubClient) Update(context.Context, any) error                  { return nil }
-func (c *stubClient) Get(context.Context, any, string) error             { return nil }
-func (c *stubClient) Query(context.Context, any) *dg.Query               { return nil }
-func (c *stubClient) Delete(context.Context, []string) error             { return nil }
-func (c *stubClient) Close()                                             {}
-func (c *stubClient) UpdateSchema(context.Context, ...any) error         { return c.schemaErr }
-func (c *stubClient) AlterSchema(context.Context, string) error          { return c.alterSchemaErr }
-func (c *stubClient) GetSchema(context.Context) (string, error)          { return "", nil }
-func (c *stubClient) DropAll(context.Context) error                      { return nil }
-func (c *stubClient) DropData(context.Context) error                     { return nil }
+func (c *stubClient) Insert(context.Context, any) error                         { return nil }
+func (c *stubClient) InsertRaw(context.Context, any) error                      { return nil }
+func (c *stubClient) Upsert(context.Context, any, ...string) error              { return nil }
+func (c *stubClient) Update(context.Context, any) error                         { return nil }
+func (c *stubClient) LoadOrStore(context.Context, any, ...string) (bool, error) { return false, nil }
+func (c *stubClient) LoadAndDelete(context.Context, any, any, ...string) (bool, error) {
+	return false, nil
+}
+func (c *stubClient) Get(context.Context, any, string) error     { return nil }
+func (c *stubClient) Query(context.Context, any) *dg.Query       { return nil }
+func (c *stubClient) Delete(context.Context, []string) error     { return nil }
+func (c *stubClient) Close()                                     {}
+func (c *stubClient) UpdateSchema(context.Context, ...any) error { return c.schemaErr }
+func (c *stubClient) AlterSchema(context.Context, string) error  { return c.alterSchemaErr }
+func (c *stubClient) GetSchema(context.Context) (string, error)  { return "", nil }
+func (c *stubClient) DropAll(context.Context) error              { return nil }
+func (c *stubClient) DropData(context.Context) error             { return nil }
 func (c *stubClient) QueryRaw(context.Context, string, map[string]string) ([]byte, error) {
 	return []byte(`{}`), nil
 }
