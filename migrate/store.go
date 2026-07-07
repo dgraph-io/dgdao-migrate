@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	mg "github.com/matthewmcneely/modusgraph"
+	mg "github.com/dgraph-io/dgdao"
 )
 
 // store persists migration state. It is the only layer that knows the Dgraph
@@ -167,8 +167,12 @@ func (s *dgraphStore) removeMigration(ctx context.Context, id int64) error {
 		return fmt.Errorf("finding records for migration %d: %w", id, err)
 	}
 	var result struct {
-		M  []struct{ UID string `json:"uid"` } `json:"m"`
-		St []struct{ UID string `json:"uid"` } `json:"st"`
+		M []struct {
+			UID string `json:"uid"`
+		} `json:"m"`
+		St []struct {
+			UID string `json:"uid"`
+		} `json:"st"`
 	}
 	if err := json.Unmarshal(raw, &result); err != nil {
 		return fmt.Errorf("parsing remove query: %w", err)
@@ -189,7 +193,7 @@ func (s *dgraphStore) removeMigration(ctx context.Context, id int64) error {
 // NOTE: acquireLock is not atomic — it reads then writes in separate
 // transactions, so two concurrent runners can both observe no/stale lock and
 // proceed. A conditional-upsert/CAS helper on the Client is the planned fix
-// (see spec "modusGraph improvement candidates"). For now rely on single-runner
+// (see spec "dgdao improvement candidates"). For now rely on single-runner
 // deploys (app scaled to zero).
 func (s *dgraphStore) acquireLock(ctx context.Context) error {
 	now := time.Now().UTC()
@@ -231,7 +235,9 @@ func (s *dgraphStore) releaseLock(ctx context.Context) error {
 		return fmt.Errorf("querying lock for release: %w", err)
 	}
 	var result struct {
-		Lock []struct{ UID string `json:"uid"` } `json:"lock"`
+		Lock []struct {
+			UID string `json:"uid"`
+		} `json:"lock"`
 	}
 	if err := json.Unmarshal(raw, &result); err != nil {
 		return fmt.Errorf("parsing lock release: %w", err)

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	mg "github.com/dgraph-io/dgdao"
 	"github.com/dgraph-io/dgo/v250/protos/api"
-	mg "github.com/matthewmcneely/modusgraph"
 )
 
 // ScalarType is the target Dgraph scalar for a RetypePredicate.

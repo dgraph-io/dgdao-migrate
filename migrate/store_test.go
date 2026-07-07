@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
-	mg "github.com/matthewmcneely/modusgraph"
+	mg "github.com/dgraph-io/dgdao"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// newEmbeddedClient opens an embedded (file://) modusGraph client backed by a
+// newEmbeddedClient opens an embedded (file://) dgdao client backed by a
 // fresh temp dir. Each test gets its own directory so the per-process singleton
 // Engine is fully torn down (client.Close then mg.Shutdown) before the next test
 // opens a new one. Do not call t.Parallel() in integration tests.
@@ -18,7 +18,7 @@ func newEmbeddedClient(t *testing.T) mg.Client {
 	// t.TempDir() creates the directory, so os.Stat inside NewClient succeeds.
 	dir := t.TempDir()
 	c, err := mg.NewClient("file://"+dir, mg.WithAutoSchema(true))
-	require.NoError(t, err, "open embedded modusgraph")
+	require.NoError(t, err, "open embedded dgdao")
 	t.Cleanup(func() {
 		c.Close()
 		// Shutdown clears activeEngine and resets the singleton flag so the

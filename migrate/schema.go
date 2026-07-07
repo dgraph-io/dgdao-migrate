@@ -9,7 +9,7 @@ import (
 
 	dg "github.com/dolan-in/dgman/v2"
 
-	mg "github.com/matthewmcneely/modusgraph"
+	mg "github.com/dgraph-io/dgdao"
 )
 
 // MarshalSchema renders struct templates to a canonical Dgraph Schema Definition

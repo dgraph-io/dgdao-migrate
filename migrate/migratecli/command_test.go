@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	mg "github.com/matthewmcneely/modusgraph"
-	"github.com/mlwelles/modusGraph-migrate/migrate"
+	mg "github.com/dgraph-io/dgdao"
+	"github.com/dgraph-io/dgdao-migrate/migrate"
 )
 
 // cmdBase/cmdAdded differ by one predicate so a diff against a cmdBase snapshot
@@ -46,7 +46,7 @@ func tempProject(t *testing.T, state string) (root, dir string) {
 		t.Fatal(err)
 	}
 	write(t, filepath.Join(dir, "migrations.go"),
-		"package migrations\n\nimport \"github.com/mlwelles/modusGraph-migrate/migrate\"\n\nvar All = []migrate.Migration{}\n")
+		"package migrations\n\nimport \"github.com/dgraph-io/dgdao-migrate/migrate\"\n\nvar All = []migrate.Migration{}\n")
 	write(t, filepath.Join(dir, "schema_state.schema"), state)
 	return root, dir
 }

@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	mg "github.com/matthewmcneely/modusgraph"
+	mg "github.com/dgraph-io/dgdao"
 )
 
 // HistoryEntry is one migration's place in the chain, annotated with applied

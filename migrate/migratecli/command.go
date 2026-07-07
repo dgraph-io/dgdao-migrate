@@ -4,7 +4,7 @@
 //
 // This package intentionally does NOT import Kong: the command structs carry
 // only inert Kong struct tags, and dispatch happens through the consumer's own
-// kong.New(..., kong.Bind(provider)) call. That keeps the modusgraph library
+// kong.New(..., kong.Bind(provider)) call. That keeps the dgdao library
 // free of a CLI-framework dependency.
 package migratecli
 
@@ -12,8 +12,8 @@ import (
 	"context"
 	"fmt"
 
-	mg "github.com/matthewmcneely/modusgraph"
-	"github.com/mlwelles/modusGraph-migrate/migrate"
+	mg "github.com/dgraph-io/dgdao"
+	"github.com/dgraph-io/dgdao-migrate/migrate"
 )
 
 // Provider supplies a Client, the registered migration list, and the current
