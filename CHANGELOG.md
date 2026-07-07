@@ -8,7 +8,7 @@ All notable changes to this project are documented here. The format follows
 ### Added
 
 - Initial extraction of the schema versioning and migration engine (`migrate`,
-  `migrate/migratecli`) from the modusGraph fork
-  (https://github.com/mlwelles/modusGraph). Includes the revision chain, phased
+  `migrate/migratecli`) from dgdao
+  (https://github.com/dgraph-io/dgdao). Includes the revision chain, phased
   resumable migrations, content-checksum immutability, retyping, struct-snapshot
   scaffolding, history, and drift verification.

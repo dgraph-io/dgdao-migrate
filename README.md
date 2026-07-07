@@ -1,7 +1,7 @@
-# modusGraph-migrate
+# dgdao-migrate
 
 The `migrate` package applies ordered, run-once schema and data changes to a
-modusGraph database. It gives you an explicit revision chain, resumable phased
+dgdao database. It gives you an explicit revision chain, resumable phased
 migrations, content checksums that make applied migrations immutable, and
 struct-snapshot scaffolding that writes your next migration.
 
@@ -10,22 +10,12 @@ This guide is consumer-agnostic. Mount the commands in any Kong CLI through
 
 ## Install
 
-`modusgraph-migrate` depends on a fork of modusGraph published under a different import
-path. Go does not propagate `replace` directives to consumers, so your project must
-declare the same one:
-
-```go
-// go.mod
-require (
-    github.com/mlwelles/modusGraph-migrate v0.1.0
-    github.com/matthewmcneely/modusgraph v0.0.0-00010101000000-000000000000
-)
-
-replace github.com/matthewmcneely/modusgraph => github.com/mlwelles/modusGraph v0.5.0-dev-mlwelles-20260604b
+```
+go get github.com/dgraph-io/dgdao-migrate
 ```
 
-The engine lives at `…/modusgraph-migrate/migrate`; the `migratecli` command at
-`…/modusgraph-migrate/migrate/migratecli`.
+The engine lives at `…/dgdao-migrate/migrate`; the `migratecli` command at
+`…/dgdao-migrate/migrate/migratecli`.
 
 ## The model
 
@@ -173,7 +163,7 @@ Scaffolding writes the next migration by comparing the current structs against a
 checked-in desired-state snapshot.
 
 **The model aggregate.** Tooling needs one value per schema entity type.
-modusgraph-gen emits `schema.Models() []any` for exactly this; supply it through
+dgdao-gen emits `schema.Models() []any` for exactly this; supply it through
 `Provider.Models()`. Because the generator owns the list, it cannot fall out of
 sync with the declared types.
 

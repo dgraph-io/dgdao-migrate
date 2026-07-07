@@ -3,7 +3,7 @@ module github.com/dgraph-io/dgdao-migrate
 go 1.26.4
 
 require (
-	github.com/dgraph-io/dgdao v0.5.3-0.20260707184702-7f51c740c7a8
+	github.com/dgraph-io/dgdao v0.5.3
 	github.com/dgraph-io/dgo/v250 v250.0.0
 	github.com/dolan-in/dgman/v2 v2.2.0
 	github.com/stretchr/testify v1.11.1
