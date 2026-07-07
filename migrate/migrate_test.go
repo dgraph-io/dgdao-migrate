@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	mg "github.com/matthewmcneely/modusgraph"
+	mg "github.com/dgraph-io/dgdao"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -1,5 +1,5 @@
 // Package migrate runs versioned, run-once schema-and-data migrations against a
-// modusgraph.Client.
+// dgdao.Client.
 //
 // # Model
 //

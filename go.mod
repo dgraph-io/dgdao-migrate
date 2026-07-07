@@ -1,11 +1,11 @@
-module github.com/mlwelles/modusGraph-migrate
+module github.com/dgraph-io/dgdao-migrate
 
 go 1.26.4
 
 require (
+	github.com/dgraph-io/dgdao v0.5.3-0.20260707184702-7f51c740c7a8
 	github.com/dgraph-io/dgo/v250 v250.0.0
 	github.com/dolan-in/dgman/v2 v2.2.0
-	github.com/matthewmcneely/modusgraph v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.11.1
 )
 
@@ -151,5 +151,3 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/matthewmcneely/modusgraph => github.com/mlwelles/modusGraph v0.5.0-dev-mlwelles-20260701a

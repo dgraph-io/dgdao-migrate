@@ -10,10 +10,11 @@ import (
 )
 
 // The two fixture struct sets differ by exactly one change per classification:
-//   diff_mime   — present only in current        → Added
-//   diff_title  — index term → exact             → IndexChanged
-//   diff_size   — type int → string              → TypeChanged
-//   diff_legacy — present only in prev           → Removed
+//
+//	diff_mime   — present only in current        → Added
+//	diff_title  — index term → exact             → IndexChanged
+//	diff_size   — type int → string              → TypeChanged
+//	diff_legacy — present only in prev           → Removed
 type diffPrev struct {
 	UID    string   `json:"uid,omitempty"`
 	DType  []string `json:"dgraph.type,omitempty" dgraph:"DiffDoc"`
@@ -131,7 +132,7 @@ func tempProject(t *testing.T) (root, dir string) {
 		t.Fatal(err)
 	}
 	mustWrite(t, filepath.Join(dir, "migrations.go"),
-		"package migrations\n\nimport \"github.com/mlwelles/modusGraph-migrate/migrate\"\n\nvar All = []migrate.Migration{}\n")
+		"package migrations\n\nimport \"github.com/dgraph-io/dgdao-migrate/migrate\"\n\nvar All = []migrate.Migration{}\n")
 	return root, dir
 }
 

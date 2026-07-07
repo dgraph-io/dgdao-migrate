@@ -6,9 +6,9 @@ import (
 	"sync"
 	"testing"
 
+	mg "github.com/dgraph-io/dgdao"
 	"github.com/dgraph-io/dgo/v250"
 	dg "github.com/dolan-in/dgman/v2"
-	mg "github.com/matthewmcneely/modusgraph"
 )
 
 // mustMarshalSchema renders the models' schema, failing the test on a conflict.

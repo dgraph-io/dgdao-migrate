@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	mg "github.com/matthewmcneely/modusgraph"
+	mg "github.com/dgraph-io/dgdao"
 )
 
 // SchemaChange is the schema portion of a Step. Set exactly one field; the zero
@@ -69,13 +69,13 @@ type Migration struct {
 
 // StatusEntry describes one migration's state for Status.
 type StatusEntry struct {
-	ID            int64
-	Name          string
-	Applied       bool   // all steps applied and the migration record written
-	StepsApplied  int    // number of completed steps (for in-progress migrations)
-	StepsTotal    int    // number of registered steps
-	Checksum      string // stored migration checksum; empty unless fully applied
-	HasDrift      bool   // stored checksum differs from computed (fully applied only)
+	ID           int64
+	Name         string
+	Applied      bool   // all steps applied and the migration record written
+	StepsApplied int    // number of completed steps (for in-progress migrations)
+	StepsTotal   int    // number of registered steps
+	Checksum     string // stored migration checksum; empty unless fully applied
+	HasDrift     bool   // stored checksum differs from computed (fully applied only)
 }
 
 // StatusResult is the output of Status.

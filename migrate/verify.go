@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	mg "github.com/matthewmcneely/modusgraph"
+	mg "github.com/dgraph-io/dgdao"
 )
 
 // Drift is the result of Verify: predicates the current structs declare that the

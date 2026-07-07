@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	mg "github.com/matthewmcneely/modusgraph"
-	"github.com/mlwelles/modusGraph-migrate/migrate"
+	mg "github.com/dgraph-io/dgdao"
+	"github.com/dgraph-io/dgdao-migrate/migrate"
 )
 
 type Tree struct {
