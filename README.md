@@ -1,9 +1,10 @@
 # dgdao-migrate
 
-The `migrate` package applies ordered, run-once schema and data changes to a
-dgdao database. It gives you an explicit revision chain, resumable phased
-migrations, content checksums that make applied migrations immutable, and
-struct-snapshot scaffolding that writes your next migration.
+A struct-first schema migration framework for Dgraph. Define your schema as
+Go structs and dgdao-migrate scaffolds your next migration from their
+snapshots, then applies ordered, run-once schema and data changes to a dgdao
+database over an explicit revision chain — with resumable phased migrations
+and content checksums that make applied migrations immutable.
 
 This guide is consumer-agnostic. Mount the commands in any Kong CLI through
 `migratecli`, or call the engine functions directly.
@@ -215,3 +216,11 @@ Two gates reuse the diff engine and catch different failures.
   database has but the structs do not. Pass a client with auto-schema disabled,
   so the check reflects what migrations applied rather than what an auto-schema
   client would re-create.
+
+## Related projects
+
+Part of the [dgdao](https://github.com/dgraph-io/dgdao) family:
+
+- [dgdao](https://github.com/dgraph-io/dgdao) — core typed client and DAO library for Dgraph
+- [dgdao-gen](https://github.com/dgraph-io/dgdao-gen) — code generator and wrapper-entity runtime
+- [dgdao-telemetry](https://github.com/dgraph-io/dgdao-telemetry) — OpenTelemetry instrumentation for the dgdao typed client
