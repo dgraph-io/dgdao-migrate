@@ -3,7 +3,7 @@ module github.com/dgraph-io/dgdao-migrate
 go 1.26.4
 
 require (
-	github.com/dgraph-io/dgdao v0.5.3
+	github.com/dgraph-io/dgdao v0.5.4
 	github.com/dgraph-io/dgo/v250 v250.0.0
 	github.com/dolan-in/dgman/v2 v2.2.0
 	github.com/stretchr/testify v1.11.1
@@ -28,11 +28,11 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chewxy/math32 v1.11.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/dgraph-io/badger/v4 v4.9.2 // indirect
-	github.com/dgraph-io/dgraph/v25 v25.3.8-0.20260630205830-2744eff5ec94 // indirect
+	github.com/dgraph-io/badger/v4 v4.9.4 // indirect
+	github.com/dgraph-io/dgraph/v25 v25.3.8 // indirect
 	github.com/dgraph-io/gqlgen v0.13.2 // indirect
 	github.com/dgraph-io/gqlparser/v2 v2.2.2 // indirect
-	github.com/dgraph-io/ristretto/v2 v2.4.0 // indirect
+	github.com/dgraph-io/ristretto/v2 v2.4.2 // indirect
 	github.com/dgraph-io/simdjson-go v0.3.0 // indirect
 	github.com/dgryski/go-farm v0.0.0-20240924180020-3414d57e47da // indirect
 	github.com/dgryski/go-groupvarint v0.0.0-20230630160417-2bfb7969fb3c // indirect
