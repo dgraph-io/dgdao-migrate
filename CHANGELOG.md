@@ -3,6 +3,14 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.3] - 2026-07-17
+
+### Changed
+
+- Bump the `github.com/dgraph-io/dgdao` dependency to v0.8.0, which adds the transaction-scoped
+  `Client.InTxn` client and moves the Client-level write methods off `TxnContext`. No behavior
+  change here; the test stub gains the new `InTxn`/`NewTxnContext` interface methods.
+
 ## [0.2.2] - 2026-07-16
 
 ### Changed

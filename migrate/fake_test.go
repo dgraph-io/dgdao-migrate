@@ -146,3 +146,5 @@ func (c *stubClient) DgraphClient() (*dgo.Dgraph, func(), error) { return nil, f
 func (c *stubClient) WithRetry(_ context.Context, _ mg.RetryPolicy, fn func() error) error {
 	return fn()
 }
+func (c *stubClient) InTxn(*mg.TxnContext) mg.Client               { return c }
+func (c *stubClient) NewTxnContext(context.Context) *mg.TxnContext { return nil }
