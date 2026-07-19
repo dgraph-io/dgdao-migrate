@@ -123,11 +123,10 @@ type stubClient struct {
 }
 
 func (c *stubClient) Insert(context.Context, any) error                         { return nil }
-func (c *stubClient) InsertRaw(context.Context, any) error                      { return nil }
 func (c *stubClient) Upsert(context.Context, any, ...string) error              { return nil }
 func (c *stubClient) Update(context.Context, any) error                         { return nil }
-func (c *stubClient) LoadOrStore(context.Context, any, ...string) (bool, error) { return false, nil }
-func (c *stubClient) LoadAndDelete(context.Context, any, any, ...string) (bool, error) {
+func (c *stubClient) GetOrInsert(context.Context, any, ...string) (bool, error) { return false, nil }
+func (c *stubClient) GetAndDelete(context.Context, any, any, ...string) (bool, error) {
 	return false, nil
 }
 func (c *stubClient) Get(context.Context, any, string) error     { return nil }
@@ -146,5 +145,5 @@ func (c *stubClient) DgraphClient() (*dgo.Dgraph, func(), error) { return nil, f
 func (c *stubClient) WithRetry(_ context.Context, _ mg.RetryPolicy, fn func() error) error {
 	return fn()
 }
-func (c *stubClient) InTxn(*mg.TxnContext) mg.Client               { return c }
-func (c *stubClient) NewTxnContext(context.Context) *mg.TxnContext { return nil }
+func (c *stubClient) InTxn(tx *mg.Txn) *mg.ClientTxn { return mg.InTxn(tx) }
+func (c *stubClient) NewTxn(context.Context) *mg.Txn { return nil }
