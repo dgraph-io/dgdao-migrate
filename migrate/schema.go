@@ -46,7 +46,7 @@ func MarshalSchema(models ...any) (string, error) {
 	for _, m := range models {
 		name := modelName(m)
 		ts := dg.NewTypeSchema()
-		ts.Marshal("", mg.UnwrapSchema(m))
+		ts.Marshal("", mg.AsRecord(m))
 
 		for pred, s := range ts.Schema {
 			decl := strings.TrimSpace(s.String())

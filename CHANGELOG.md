@@ -3,6 +3,15 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.4] - 2026-07-19
+
+### Changed
+
+- Bump the `github.com/dgraph-io/dgdao` dependency to v0.9.0, which renames the
+  transaction surface (`Txn`/`ClientTxn`), the consume operations
+  (`GetOrInsert`/`GetAndDelete`), and the record bridge (`AsRecord`). Schema rendering
+  follows the `AsRecord` rename; no behavior change in migrate itself.
+
 ## [0.2.3] - 2026-07-17
 
 ### Changed
