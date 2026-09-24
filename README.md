@@ -232,6 +232,13 @@ Two gates reuse the diff engine and catch different failures.
   so the check reflects what migrations applied rather than what an auto-schema
   client would re-create.
 
+**Upgrading from v0.2.4 or earlier.** Those versions recorded types in the
+snapshot without emitting them in the migration, so a type or type field added
+with them may be missing from the database. `verify` then reports `MISSING TYPE`
+or `MISSING FIELD`, while `diff` and `create` see no delta. Fix it with a
+hand-written migration whose `EnsureSchema` carries the full definition of each
+type `verify` reports.
+
 ## Related projects
 
 Part of the [dgdao](https://github.com/dgraph-io/dgdao) family:

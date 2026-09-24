@@ -476,3 +476,20 @@ func TestDiffSchema_FieldRemovedFromTypeIsNoted(t *testing.T) {
 		t.Errorf("source must note the field leaving the type:\n%s", goSrc)
 	}
 }
+
+func TestRenderMigrationFile_DownGuidanceMatchesDelta(t *testing.T) {
+	typeOnly := Delta{TypesChanged: []string{memberDocDef}}
+	goSrc, _ := renderMigrationFile("migrations", "extra_on_doc", 20260601110000, 0, typeOnly)
+	if !strings.Contains(goSrc, "re-applying its previous definition") {
+		t.Errorf("type-only Down guidance must say to re-apply the previous type definition:\n%s", goSrc)
+	}
+	if strings.Contains(goSrc, "drop these predicates") {
+		t.Errorf("type-only Down guidance must not mention dropping predicates:\n%s", goSrc)
+	}
+
+	addOnly := Delta{Added: []string{"scaf_mime: string @index(exact) ."}}
+	goSrc, _ = renderMigrationFile("migrations", "add_mime", 20260601090000, 0, addOnly)
+	if !strings.Contains(goSrc, "drop these predicates") || strings.Contains(goSrc, "previous definition") {
+		t.Errorf("predicate-only Down guidance should mention only dropping predicates:\n%s", goSrc)
+	}
+}

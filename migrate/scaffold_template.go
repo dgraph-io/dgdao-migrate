@@ -56,7 +56,15 @@ func renderMigrationFile(pkg, name string, id, after int64, delta Delta) (goSrc,
 	fmt.Fprintf(&b, "\t\t\tName: %q,\n", stepName)
 	if additive {
 		fmt.Fprintf(&b, "\t\t\tSchema: migrate.SchemaChange{EnsureSchema: %s},\n", schemaVar)
-		b.WriteString("\t\t\t// Down: drop these predicates to make this reversible (see MIGRATIONS.md).\n")
+		if len(delta.Added)+len(delta.IndexChanged) > 0 {
+			b.WriteString("\t\t\t// Down: drop these predicates to make this reversible (see MIGRATIONS.md).\n")
+		}
+		if len(delta.TypesAdded) > 0 {
+			b.WriteString("\t\t\t// Down: drop the added types.\n")
+		}
+		if len(delta.TypesChanged) > 0 {
+			b.WriteString("\t\t\t// Down: undo a changed type by re-applying its previous definition.\n")
+		}
 	} else {
 		b.WriteString("\t\t\t// No additive schema generated — see SCAFFOLD NOTES above.\n")
 		b.WriteString("\t\t\t// Add an Alter/RetypePredicate or data step as needed.\n")

@@ -31,6 +31,17 @@ All notable changes to this project are documented here. The format follows
   merged every type's fields into one set, so a field counted as present if any
   type or predicate declaration named it.
 
+### Upgrading
+
+- Through v0.2.4, `create` recorded the full schema, types included, in
+  `schema_state.schema` while the migration it wrote carried only predicates. If
+  you added a type, or added a field to a type, with v0.2.4 or earlier, your
+  database may lack it even though the snapshot records it. After upgrading,
+  `verify` reports it as `MISSING TYPE` or `MISSING FIELD`, while `diff` and
+  `create` see no delta, because the snapshot already holds it. To fix it, write a
+  migration by hand whose `EnsureSchema` carries the full definition of each type
+  `verify` reports.
+
 ## [0.2.4] - 2026-07-19
 
 ### Changed
