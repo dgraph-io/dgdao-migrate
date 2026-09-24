@@ -3,6 +3,7 @@ package migrate
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -10,28 +11,35 @@ import (
 )
 
 // Drift is the result of Verify: predicates the current structs declare that the
-// live schema is missing entirely (Missing) or defines differently (Mismatched).
-// It is one-directional — predicates present only in the database are ignored,
-// since the database always carries system and migration-bookkeeping predicates
-// the application structs do not.
+// live schema is missing entirely (Missing) or defines differently (Mismatched),
+// and types the live schema lacks (MissingTypes) or whose field list lacks a
+// field the structs declare (MissingTypeFields). It is one-directional —
+// predicates, types, and type fields present only in the database are ignored,
+// since the database always carries system and migration-bookkeeping schema the
+// application structs do not.
 //
 // Mismatched is only reported when the live schema exposes predicate
 // declarations (a real Dgraph cluster). The embedded file:// engine returns only
-// type membership, so against it Verify catches Missing predicates but cannot
-// compare type/index definitions.
+// type membership, so against it Verify catches Missing predicates and all type
+// drift but cannot compare predicate type/index definitions.
 type Drift struct {
-	Missing    []string // declarations the structs want but the live schema lacks
-	Mismatched []string // "predicate: want <decl> | live <decl>" for differing definitions
+	Missing           []string // declarations the structs want but the live schema lacks
+	Mismatched        []string // "predicate: want <decl> | live <decl>" for differing definitions
+	MissingTypes      []string // type names the structs want but the live schema lacks
+	MissingTypeFields []string // "Type.field" entries absent from an existing live type
 }
 
-// Clean reports whether the live schema satisfies every predicate the structs
-// declare.
-func (d Drift) Clean() bool { return len(d.Missing)+len(d.Mismatched) == 0 }
+// Clean reports whether the live schema satisfies every predicate and type the
+// structs declare.
+func (d Drift) Clean() bool {
+	return len(d.Missing)+len(d.Mismatched)+len(d.MissingTypes)+len(d.MissingTypeFields) == 0
+}
 
 // Verify compares the schema the given models declare against the database's
 // live schema, reporting any predicate the database is missing or defines
-// differently. Use it as a post-migration drift gate: after `migrate up`, the
-// live schema must satisfy the current structs.
+// differently, and any type or type field it lacks. Use it as a post-migration
+// drift gate: after `migrate up`, the live schema must satisfy the current
+// structs.
 func Verify(ctx context.Context, c mg.Client, models []any) (Drift, error) {
 	want, err := MarshalSchema(models...)
 	if err != nil {
@@ -66,7 +74,28 @@ func Verify(ctx context.Context, c mg.Client, models []any) (Drift, error) {
 			d.Mismatched = append(d.Mismatched, fmt.Sprintf("%s: want %q | live %q", p, want, got))
 		}
 	}
+	d.MissingTypes, d.MissingTypeFields = missingTypes(parseTypes(want), parseTypes(live))
 	return d, nil
+}
+
+// missingTypes reports each wanted type absent from live, and each wanted field
+// absent from a live type that does exist. Both results are sorted.
+func missingTypes(want, live map[string][]string) (types, fields []string) {
+	for name, wantFields := range want {
+		liveFields, ok := live[name]
+		if !ok {
+			types = append(types, name)
+			continue
+		}
+		for _, f := range wantFields {
+			if !slices.Contains(liveFields, f) {
+				fields = append(fields, name+"."+f)
+			}
+		}
+	}
+	sort.Strings(types)
+	sort.Strings(fields)
+	return types, fields
 }
 
 // schemaPredicates parses a schema string into its predicate declarations

@@ -9,8 +9,9 @@ import (
 
 // renderMigrationFile produces the generated .go source and its companion
 // .schema content for one scaffolded migration. When the delta has additive
-// changes, the step embeds the .schema and applies it via EnsureSchema; when the
-// delta is purely flagged (retype/removal), the .schema is empty and the step is
+// changes, the step embeds the .schema (predicate lines, then full type
+// definitions) and applies it via EnsureSchema; when the delta is purely
+// flagged (retype/removal), the .schema is empty and the step is
 // a stub carrying only the action-required notes — the scaffolder never emits an
 // unsafe EnsureSchema. goSrc is gofmt-formatted.
 func renderMigrationFile(pkg, name string, id, after int64, delta Delta) (goSrc, schema string) {
@@ -55,7 +56,15 @@ func renderMigrationFile(pkg, name string, id, after int64, delta Delta) (goSrc,
 	fmt.Fprintf(&b, "\t\t\tName: %q,\n", stepName)
 	if additive {
 		fmt.Fprintf(&b, "\t\t\tSchema: migrate.SchemaChange{EnsureSchema: %s},\n", schemaVar)
-		b.WriteString("\t\t\t// Down: drop these predicates to make this reversible (see MIGRATIONS.md).\n")
+		if len(delta.Added)+len(delta.IndexChanged) > 0 {
+			b.WriteString("\t\t\t// Down: drop these predicates to make this reversible (see MIGRATIONS.md).\n")
+		}
+		if len(delta.TypesAdded) > 0 {
+			b.WriteString("\t\t\t// Down: drop the added types.\n")
+		}
+		if len(delta.TypesChanged) > 0 {
+			b.WriteString("\t\t\t// Down: undo a changed type by re-applying its previous definition.\n")
+		}
 	} else {
 		b.WriteString("\t\t\t// No additive schema generated — see SCAFFOLD NOTES above.\n")
 		b.WriteString("\t\t\t// Add an Alter/RetypePredicate or data step as needed.\n")
@@ -85,6 +94,14 @@ func renderNotes(d Delta) string {
 	for _, r := range d.Removed {
 		fmt.Fprintf(&b, "//   REMOVED: %s\n", r)
 		b.WriteString("//     Not auto-dropped. If intentional, add an explicit Alter drop step.\n")
+	}
+	for _, r := range d.TypesRemoved {
+		fmt.Fprintf(&b, "//   REMOVED TYPE: %s\n", r)
+		b.WriteString("//     Not auto-dropped. If intentional, add a step that drops the type.\n")
+	}
+	for _, f := range d.TypeFieldsRemoved {
+		fmt.Fprintf(&b, "//   FIELD REMOVED FROM TYPE: %s\n", f)
+		b.WriteString("//     Applied by the type definition; the data stays but leaves expand(_all_).\n")
 	}
 	b.WriteByte('\n')
 	return b.String()

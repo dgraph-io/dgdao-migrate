@@ -174,7 +174,8 @@ tool-managed: `create` advances it, and `snapshot` re-syncs it. Seed it once at
 adoption with `snapshot`.
 
 **The diff.** Both sides are canonical `MarshalSchema` output, so the diff is a
-stable line-by-line set difference. It classifies each change:
+stable set difference over predicate declarations and over each type's field
+list. It classifies each change:
 
 | Change | Condition | Action |
 |---|---|---|
@@ -182,6 +183,18 @@ stable line-by-line set difference. It classifies each change:
 | Index changed | same predicate, index/directives differ | emit into the delta |
 | Type changed | same predicate, scalar type differs | flag for `RetypePredicate`; never emitted |
 | Removed | predicate in state, absent now | flag; never auto-dropped |
+| Type added | type present now, absent in state | emit the full type definition |
+| Type fields changed | same type, field list differs | emit the full type definition; note each field it drops |
+| Type removed | type in state, absent now | flag; never auto-dropped |
+
+Type membership is diffed on its own because Dgraph stores each type's field
+list separately from the predicates: adding an existing predicate to a type is a
+schema change even though no predicate declaration changes. Dgraph replaces a
+whole type on alter, so the `.schema` file carries the complete current
+definition of every added or changed type, after the predicate lines, never a
+partial one. A field dropped from a type is removed from it by that definition,
+so the notes name it: the predicate and its data stay, but the field no longer
+appears in `expand(_all_)` for that type.
 
 If the delta is purely flagged, the generated `.schema` is empty and the step is
 a stub carrying only the action-required notes. The scaffolder never emits an
@@ -208,14 +221,23 @@ func Verify(ctx context.Context, c mg.Client, models []any) (Drift, error)
 Two gates reuse the diff engine and catch different failures.
 
 - **Offline — `diff --check`.** Exits non-zero when the structs have drifted
-  from the snapshot. It needs no database and runs in `make check`, the
-  `gofmt -l` idiom for migrations.
+  from the snapshot, including a change to type membership alone. It needs no
+  database and runs in `make check`, the `gofmt -l` idiom for migrations.
 - **Live — `verify`.** Exits non-zero when the database lacks a predicate the
-  structs declare, or — against a real Dgraph — defines one differently. Run it
-  after `up` in CI. `verify` is one-directional: it ignores predicates the
+  structs declare, lacks a type they declare, lacks a field in one of those
+  types, or — against a real Dgraph — defines a predicate differently. Type
+  checks work against the embedded engine as well. Run it after `up` in CI.
+  `verify` is one-directional: it ignores predicates, types, and type fields the
   database has but the structs do not. Pass a client with auto-schema disabled,
   so the check reflects what migrations applied rather than what an auto-schema
   client would re-create.
+
+**Upgrading from v0.2.4 or earlier.** Those versions recorded types in the
+snapshot without emitting them in the migration, so a type or type field added
+with them may be missing from the database. `verify` then reports `MISSING TYPE`
+or `MISSING FIELD`, while `diff` and `create` see no delta. Fix it with a
+hand-written migration whose `EnsureSchema` carries the full definition of each
+type `verify` reports.
 
 ## Related projects
 

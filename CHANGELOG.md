@@ -3,6 +3,45 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.5] - 2026-09-23
+
+### Added
+
+- `migrate diff` and `migrate create` now compare type membership. A type that
+  was added, removed, or gained or lost a field is reported, and `diff --check`
+  fails when only type membership has drifted. `create` writes the full current
+  definition of each added or changed type into the migration's `.schema`, after
+  the predicate lines, because Dgraph replaces a whole type on alter. A removed
+  type is flagged in the SCAFFOLD NOTES block and never dropped automatically,
+  matching how removed predicates are handled. A field dropped from a changed
+  type is also named in the notes, since the emitted definition removes it from
+  the type.
+- `Verify` reports a type the structs declare that the live schema lacks
+  (`Drift.MissingTypes`) and each field missing from a live type
+  (`Drift.MissingTypeFields`, as `Type.field`). Both checks work against the
+  embedded engine.
+
+### Fixed
+
+- Adding an already-declared predicate to a type no longer produces an empty
+  delta. Previously `diff --check` passed, `create` wrote an empty stub
+  migration, and the desired-state snapshot absorbed the change, so the type
+  change never reached the database.
+- `Verify` no longer passes when a live type is missing a field. It previously
+  merged every type's fields into one set, so a field counted as present if any
+  type or predicate declaration named it.
+
+### Upgrading
+
+- Through v0.2.4, `create` recorded the full schema, types included, in
+  `schema_state.schema` while the migration it wrote carried only predicates. If
+  you added a type, or added a field to a type, with v0.2.4 or earlier, your
+  database may lack it even though the snapshot records it. After upgrading,
+  `verify` reports it as `MISSING TYPE` or `MISSING FIELD`, while `diff` and
+  `create` see no delta, because the snapshot already holds it. To fix it, write a
+  migration by hand whose `EnsureSchema` carries the full definition of each type
+  `verify` reports.
+
 ## [0.2.4] - 2026-07-19
 
 ### Changed

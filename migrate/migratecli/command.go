@@ -11,6 +11,7 @@ package migratecli
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	mg "github.com/dgraph-io/dgdao"
 	"github.com/dgraph-io/dgdao-migrate/migrate"
@@ -220,8 +221,14 @@ func (c *VerifyCmd) Run(p Provider) error {
 	for _, m := range drift.Mismatched {
 		fmt.Printf("  MISMATCH: %s\n", m)
 	}
-	return fmt.Errorf("migrate verify: live schema drift — %d missing, %d mismatched",
-		len(drift.Missing), len(drift.Mismatched))
+	for _, m := range drift.MissingTypes {
+		fmt.Printf("  MISSING TYPE:  %s\n", m)
+	}
+	for _, m := range drift.MissingTypeFields {
+		fmt.Printf("  MISSING FIELD: %s\n", m)
+	}
+	return fmt.Errorf("migrate verify: live schema drift — %d missing, %d mismatched, %d missing types, %d missing type fields",
+		len(drift.Missing), len(drift.Mismatched), len(drift.MissingTypes), len(drift.MissingTypeFields))
 }
 
 // printReport summarizes a scaffolded migration for the operator.
@@ -232,7 +239,11 @@ func printReport(r migrate.ScaffoldReport, wantRegister bool) {
 	printChanges("index changed", r.IndexChanged)
 	printChanges("TYPE CHANGED (needs RetypePredicate)", r.TypeChanged)
 	printChanges("REMOVED (not auto-dropped)", r.Removed)
-	if !r.HasDelta && len(r.TypeChanged)+len(r.Removed) == 0 {
+	printChanges("type added", r.TypesAdded)
+	printChanges("type changed", r.TypesChanged)
+	printChanges("TYPE REMOVED (not auto-dropped)", r.TypesRemoved)
+	printChanges("FIELD REMOVED FROM TYPE", r.TypeFieldsRemoved)
+	if !r.HasDelta && len(r.TypeChanged)+len(r.Removed)+len(r.TypesRemoved) == 0 {
 		fmt.Println("  no schema delta — empty stub migration")
 	}
 	switch {
@@ -253,6 +264,10 @@ func printDelta(d migrate.Delta) {
 	printChanges("index changed", d.IndexChanged)
 	printChanges("TYPE CHANGED (needs RetypePredicate)", d.TypeChanged)
 	printChanges("REMOVED (not auto-dropped)", d.Removed)
+	printChanges("type added", d.TypesAdded)
+	printChanges("type changed", d.TypesChanged)
+	printChanges("TYPE REMOVED (not auto-dropped)", d.TypesRemoved)
+	printChanges("FIELD REMOVED FROM TYPE", d.TypeFieldsRemoved)
 }
 
 func printChanges(label string, items []string) {
@@ -261,6 +276,7 @@ func printChanges(label string, items []string) {
 	}
 	fmt.Printf("  %s (%d):\n", label, len(items))
 	for _, it := range items {
-		fmt.Printf("    %s\n", it)
+		// Type definitions span several lines; indent each one.
+		fmt.Printf("    %s\n", strings.ReplaceAll(it, "\n", "\n    "))
 	}
 }

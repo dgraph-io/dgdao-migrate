@@ -116,3 +116,25 @@ func TestDiffCmd_CheckExitsNonZeroOnDrift(t *testing.T) {
 		t.Errorf("diff --check should pass when structs match the snapshot: %v", err)
 	}
 }
+
+// cmdMember adds the already-declared cmd_extra to CmdDoc; cmdOther declares it.
+type cmdMember struct {
+	UID   string   `json:"uid,omitempty"`
+	DType []string `json:"dgraph.type,omitempty" dgraph:"CmdDoc"`
+	Name  string   `json:"name,omitempty" dgraph:"predicate=cmd_name index=term"`
+	Extra string   `json:"extra,omitempty" dgraph:"predicate=cmd_extra index=exact"`
+}
+
+type cmdOther struct {
+	UID   string   `json:"uid,omitempty"`
+	DType []string `json:"dgraph.type,omitempty" dgraph:"CmdOther"`
+	Extra string   `json:"extra,omitempty" dgraph:"predicate=cmd_extra index=exact"`
+}
+
+func TestDiffCmd_CheckFailsOnTypeMembershipDrift(t *testing.T) {
+	root, _ := tempProject(t, mustSchema(t, &cmdBase{}, &cmdOther{}))
+	drifted := &fakeProvider{models: []any{&cmdMember{}, &cmdOther{}}}
+	if err := (&DiffCmd{Check: true, ProjectRoot: root}).Run(drifted); err == nil {
+		t.Errorf("diff --check should exit non-zero when only type membership drifted")
+	}
+}
