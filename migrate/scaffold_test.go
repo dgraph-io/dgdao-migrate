@@ -68,8 +68,12 @@ func TestDiffSchema_ClassifiesEachChange(t *testing.T) {
 	}
 
 	// The type change is destructive and must not be emittable schema.
-	if d.HasAdditive() && bucketHas(d.Additive(), "diff_size") {
+	if d.HasAdditive() && bucketHas(d.Additive(), "diff_size:") {
 		t.Errorf("retype must never be emitted as additive schema")
+	}
+	// DiffDoc gained diff_mime and lost diff_legacy, so its full definition is emitted.
+	if !bucketHas(d.TypesChanged, "type DiffDoc {") {
+		t.Errorf("DiffDoc membership change not reported; TypesChanged = %q", d.TypesChanged)
 	}
 	if !d.HasFlagged() {
 		t.Errorf("expected flagged changes (type change + removal)")
@@ -330,5 +334,145 @@ func TestSnapshot_RewritesStateOnly(t *testing.T) {
 		if strings.HasSuffix(e.Name(), ".go") && e.Name() != "migrations.go" {
 			t.Errorf("snapshot unexpectedly wrote a migration file: %s", e.Name())
 		}
+	}
+}
+
+// --- Type membership --------------------------------------------------------
+
+// memberPrev/memberCur differ only in type membership: member_extra is already
+// declared (via memberOther), and memberCur adds it to the MemberDoc type.
+type memberPrev struct {
+	UID   string   `json:"uid,omitempty"`
+	DType []string `json:"dgraph.type,omitempty" dgraph:"MemberDoc"`
+	Name  string   `json:"name,omitempty" dgraph:"predicate=member_name index=term"`
+}
+
+type memberCur struct {
+	UID   string   `json:"uid,omitempty"`
+	DType []string `json:"dgraph.type,omitempty" dgraph:"MemberDoc"`
+	Name  string   `json:"name,omitempty" dgraph:"predicate=member_name index=term"`
+	Extra string   `json:"extra,omitempty" dgraph:"predicate=member_extra"`
+}
+
+type memberOther struct {
+	UID   string   `json:"uid,omitempty"`
+	DType []string `json:"dgraph.type,omitempty" dgraph:"MemberOther"`
+	Extra string   `json:"extra,omitempty" dgraph:"predicate=member_extra"`
+}
+
+const memberDocDef = "type MemberDoc {\nmember_extra\nmember_name\n}"
+
+func TestDiffSchema_TypeMembershipOnlyChange(t *testing.T) {
+	prev := mustMarshalSchema(t, &memberPrev{}, &memberOther{})
+	current := mustMarshalSchema(t, &memberCur{}, &memberOther{})
+
+	d := diffSchema(prev, current)
+	if d.Empty() {
+		t.Fatalf("a type membership change must not produce an empty delta")
+	}
+	if len(d.Added)+len(d.IndexChanged)+len(d.TypeChanged)+len(d.Removed) != 0 {
+		t.Errorf("no predicate declaration changed; got %+v", d)
+	}
+	if len(d.TypesChanged) != 1 || d.TypesChanged[0] != memberDocDef {
+		t.Errorf("TypesChanged = %q, want the full MemberDoc definition", d.TypesChanged)
+	}
+	if !d.HasAdditive() || !bucketHas(d.Additive(), "type MemberDoc {") {
+		t.Errorf("the changed type definition must be emittable; Additive() = %q", d.Additive())
+	}
+}
+
+func TestDiffSchema_TypesAddedAndRemoved(t *testing.T) {
+	prev := mustMarshalSchema(t, &memberPrev{})
+	current := mustMarshalSchema(t, &memberOther{})
+
+	d := diffSchema(prev, current)
+	if len(d.TypesAdded) != 1 || d.TypesAdded[0] != "type MemberOther {\nmember_extra\n}" {
+		t.Errorf("TypesAdded = %q, want the full MemberOther definition", d.TypesAdded)
+	}
+	if len(d.TypesRemoved) != 1 || d.TypesRemoved[0] != "MemberDoc" {
+		t.Errorf("TypesRemoved = %q, want [MemberDoc]", d.TypesRemoved)
+	}
+	if len(d.TypesChanged) != 0 {
+		t.Errorf("TypesChanged = %q, want none", d.TypesChanged)
+	}
+	if !d.HasFlagged() {
+		t.Errorf("a removed type must be flagged")
+	}
+}
+
+func TestRenderMigrationFile_RemovedTypeIsNoted(t *testing.T) {
+	delta := Delta{TypesRemoved: []string{"MemberDoc"}}
+	goSrc, schema := renderMigrationFile("migrations", "drop_doc", 20260601100000, 20260601090000, delta)
+
+	if schema != "" {
+		t.Errorf("a removed type must not produce schema; got %q", schema)
+	}
+	for _, want := range []string{"SCAFFOLD NOTES", "REMOVED TYPE: MemberDoc"} {
+		if !strings.Contains(goSrc, want) {
+			t.Errorf("source missing %q\n---\n%s", want, goSrc)
+		}
+	}
+}
+
+func TestScaffold_TypeMembershipOnlyChangeEmitsFullTypeDefinition(t *testing.T) {
+	_, dir := tempProject(t)
+	mustWrite(t, filepath.Join(dir, schemaStateFile), mustMarshalSchema(t, &memberPrev{}, &memberOther{}))
+	models := []any{&memberCur{}, &memberOther{}}
+
+	if d, err := Diff(dir, models); err != nil || d.Empty() {
+		t.Fatalf("Diff must report type membership drift; err=%v delta=%+v", err, d)
+	}
+
+	report, err := Scaffold(ScaffoldParams{
+		Migrations: []Migration{{ID: 20260528000001, After: 0, Name: "baseline"}},
+		Models:     models,
+		Dir:        dir,
+		Package:    "migrations",
+		Name:       "extra_on_doc",
+		Now:        time.Date(2026, 6, 1, 11, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatalf("Scaffold: %v", err)
+	}
+	if !report.HasDelta {
+		t.Errorf("type-only scaffold should report a delta")
+	}
+	if got := readFile(t, report.SchemaFile); got != memberDocDef+"\n" {
+		t.Errorf("schema file = %q, want only the full MemberDoc definition", got)
+	}
+	if goSrc := readFile(t, report.GoFile); !strings.Contains(goSrc, "EnsureSchema: extraOnDocSchema") {
+		t.Errorf("type-only migration must apply the schema via EnsureSchema:\n%s", goSrc)
+	}
+	if d, err := Diff(dir, models); err != nil || !d.Empty() {
+		t.Errorf("state not advanced; follow-up diff err=%v shows %+v", err, d)
+	}
+}
+
+func TestRenderMigrationFile_PredicatesThenTypes(t *testing.T) {
+	delta := Delta{
+		Added:      []string{"member_extra: string ."},
+		TypesAdded: []string{"type MemberOther {\nmember_extra\n}"},
+	}
+	_, schema := renderMigrationFile("migrations", "add_other", 20260601090000, 0, delta)
+	want := "member_extra: string .\ntype MemberOther {\nmember_extra\n}\n"
+	if schema != want {
+		t.Errorf("schema = %q, want %q", schema, want)
+	}
+}
+
+func TestDiffSchema_FieldRemovedFromTypeIsNoted(t *testing.T) {
+	prev := mustMarshalSchema(t, &memberCur{}, &memberOther{})
+	current := mustMarshalSchema(t, &memberPrev{}, &memberOther{})
+
+	d := diffSchema(prev, current)
+	if len(d.TypesChanged) != 1 || d.TypesChanged[0] != "type MemberDoc {\nmember_name\n}" {
+		t.Errorf("TypesChanged = %q, want the full new MemberDoc definition", d.TypesChanged)
+	}
+	if len(d.TypeFieldsRemoved) != 1 || d.TypeFieldsRemoved[0] != "MemberDoc.member_extra" {
+		t.Errorf("TypeFieldsRemoved = %q, want [MemberDoc.member_extra]", d.TypeFieldsRemoved)
+	}
+	goSrc, _ := renderMigrationFile("migrations", "drop_extra", 20260601100000, 0, d)
+	if !strings.Contains(goSrc, "FIELD REMOVED FROM TYPE: MemberDoc.member_extra") {
+		t.Errorf("source must note the field leaving the type:\n%s", goSrc)
 	}
 }

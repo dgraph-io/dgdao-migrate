@@ -17,32 +17,49 @@ const schemaStateFile = "schema_state.schema"
 
 // Delta is the classified difference between two canonical schema strings — the
 // checked-in desired state and the schema derived from the current structs.
-// Added and IndexChanged are additive and safe to emit verbatim into an
-// EnsureSchema step. TypeChanged and Removed are destructive or ambiguous: the
-// scaffolder only flags them as action-required comments, never as schema.
+// Added, IndexChanged, TypesAdded, and TypesChanged are emitted verbatim into
+// an EnsureSchema step. TypeChanged, Removed, and TypesRemoved are destructive
+// or ambiguous: the scaffolder only flags them as action-required comments,
+// never as schema. TypeFieldsRemoved is flagged too, but the emitted
+// TypesChanged definition already drops those fields from their types.
 type Delta struct {
 	Added        []string // full predicate declaration lines new since the last state
 	IndexChanged []string // full predicate declaration lines whose index/directives changed
 	TypeChanged  []string // "predicate: oldType → newType" notes; needs RetypePredicate
 	Removed      []string // full predicate declaration lines absent from the current structs
+	TypesAdded   []string // full "type T { ... }" definitions new since the last state
+	TypesChanged []string // full current definitions of types whose field list changed
+	TypesRemoved []string // names of types absent from the current structs
+
+	TypeFieldsRemoved []string // "Type.field" entries a changed type no longer lists
 }
 
-// Additive returns the declaration lines safe to apply via EnsureSchema (the
-// Added and IndexChanged buckets), sorted for a deterministic schema file.
+// Additive returns the schema safe to apply via EnsureSchema: the sorted
+// predicate lines (Added and IndexChanged), then the full definitions of added
+// and changed types, so every type's fields are declared before the type.
 func (d Delta) Additive() []string {
-	out := make([]string, 0, len(d.Added)+len(d.IndexChanged))
-	out = append(out, d.Added...)
-	out = append(out, d.IndexChanged...)
-	sort.Strings(out)
-	return out
+	preds := make([]string, 0, len(d.Added)+len(d.IndexChanged))
+	preds = append(preds, d.Added...)
+	preds = append(preds, d.IndexChanged...)
+	sort.Strings(preds)
+
+	types := make([]string, 0, len(d.TypesAdded)+len(d.TypesChanged))
+	types = append(types, d.TypesAdded...)
+	types = append(types, d.TypesChanged...)
+	sort.Strings(types)
+	return append(preds, types...)
 }
 
 // HasAdditive reports whether the delta contains anything to emit as schema.
-func (d Delta) HasAdditive() bool { return len(d.Added)+len(d.IndexChanged) > 0 }
+func (d Delta) HasAdditive() bool {
+	return len(d.Added)+len(d.IndexChanged)+len(d.TypesAdded)+len(d.TypesChanged) > 0
+}
 
 // HasFlagged reports whether the delta contains a destructive/ambiguous change
 // that the scaffolder will flag rather than emit.
-func (d Delta) HasFlagged() bool { return len(d.TypeChanged)+len(d.Removed) > 0 }
+func (d Delta) HasFlagged() bool {
+	return len(d.TypeChanged)+len(d.Removed)+len(d.TypesRemoved)+len(d.TypeFieldsRemoved) > 0
+}
 
 // Empty reports whether the two schemas are identical (no drift).
 func (d Delta) Empty() bool { return !d.HasAdditive() && !d.HasFlagged() }
@@ -63,16 +80,20 @@ type ScaffoldParams struct {
 
 // ScaffoldReport summarizes what Scaffold wrote, for the CLI to print.
 type ScaffoldReport struct {
-	MigrationID  int64
-	After        int64
-	GoFile       string
-	SchemaFile   string
-	Added        []string
-	IndexChanged []string
-	TypeChanged  []string
-	Removed      []string
-	Registered   bool
-	HasDelta     bool
+	MigrationID       int64
+	After             int64
+	GoFile            string
+	SchemaFile        string
+	Added             []string
+	IndexChanged      []string
+	TypeChanged       []string
+	Removed           []string
+	TypesAdded        []string
+	TypesChanged      []string
+	TypesRemoved      []string
+	TypeFieldsRemoved []string
+	Registered        bool
+	HasDelta          bool
 }
 
 // Diff computes the delta the next migration would capture: the current structs'
@@ -169,16 +190,20 @@ func Scaffold(p ScaffoldParams) (ScaffoldReport, error) {
 	}
 
 	return ScaffoldReport{
-		MigrationID:  id,
-		After:        after,
-		GoFile:       goFile,
-		SchemaFile:   schemaFile,
-		Added:        delta.Added,
-		IndexChanged: delta.IndexChanged,
-		TypeChanged:  delta.TypeChanged,
-		Removed:      delta.Removed,
-		Registered:   registered,
-		HasDelta:     delta.HasAdditive(),
+		MigrationID:       id,
+		After:             after,
+		GoFile:            goFile,
+		SchemaFile:        schemaFile,
+		Added:             delta.Added,
+		IndexChanged:      delta.IndexChanged,
+		TypeChanged:       delta.TypeChanged,
+		Removed:           delta.Removed,
+		TypesAdded:        delta.TypesAdded,
+		TypesChanged:      delta.TypesChanged,
+		TypesRemoved:      delta.TypesRemoved,
+		TypeFieldsRemoved: delta.TypeFieldsRemoved,
+		Registered:        registered,
+		HasDelta:          delta.HasAdditive(),
 	}, nil
 }
 
